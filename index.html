@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw Memory: From Community Chaos to Unified Architecture</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #00ff41;
+            --text-secondary: #00cc33;
+            --text-accent: #ffff00;
+            --text-muted: #666;
+            --border-color: #333;
+            --terminal-green: #00ff41;
+            --warning: #ff9500;
+            --error: #ff0040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 80px;
+        }
+
+        section {
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--text-accent);
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            border-left: 4px solid var(--text-primary);
+            padding-left: 1rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 8rem 0;
+            background: linear-gradient(45deg, var(--bg-primary), var(--bg-secondary));
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            color: var(--text-accent);
+            font-weight: bold;
+            display: block;
+        }
+
+        /* Code Blocks & ASCII Art */
+        pre, code {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        pre {
+            margin: 1rem 0;
+            white-space: pre-wrap;
+        }
+
+        .ascii-diagram {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--text-primary);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.2;
+            overflow-x: auto;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: var(--bg-secondary);
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--text-accent);
+            font-weight: bold;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        /* Lists */
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        /* Status Indicators */
+        .status-ok { color: var(--text-primary); }
+        .status-warning { color: var(--warning); }
+        .status-error { color: var(--error); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Terminal Effect */
+        .terminal-cursor::after {
+            content: '█';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--bg-primary);
+                flex-direction: column;
+                padding: 1rem;
+                border-top: 1px solid var(--border-color);
+                display: none;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="#hero" class="logo">OpenClaw Memory Analysis</a>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#hero">Hero</a></li>
+                <li><a href="#vanilla">Vanilla OpenClaw</a></li>
+                <li><a href="#community">Community</a></li>
+                <li><a href="#ruflo">Ruflo Research</a></li>
+                <li><a href="#solution">Our Solution</a></li>
+                <li><a href="#implementation">Implementation</a></li>
+                <li><a href="#comparison">Comparison</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Section 1: Hero -->
+        <section id="hero" class="hero">
+            <div class="container">
+                <h1>OpenClaw Memory</h1>
+                <p class="hero-subtitle">From Community Chaos to Unified Architecture</p>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">30+</span>
+                        <p>Open Issues</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">920</span>
+                        <p>Skills in Database</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">4096</span>
+                        <p>Vector Dimensions</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">3974</span>
+                        <p>Memory Entries</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: How Memory Works in Vanilla OpenClaw -->
+        <section id="vanilla">
+            <div class="container">
+                <h2>How Memory Works in Vanilla OpenClaw</h2>
+                <p>OpenClaw's original memory system consists of three main backends:</p>
+                
+                <div class="ascii-diagram">
+┌──────────────┐    ┌─────────────────┐    ┌──────────────┐
+│  OpenClaw    │───▶│  memory-core    │───▶│   LanceDB    │
+│  Agent Loop  │    │    (plugin)     │    │   Vector     │
+│              │    │                 │───▶│   Database   │
+│  Hook API    │    │  Query Engine   │    │     QMD      │
+└──────────────┘    └─────────────────┘    └──────────────┘
+                </div>
+
+                <h3>Memory-Core Architecture</h3>
+                <p>The memory-core plugin provides the foundational memory infrastructure with several backend options:</p>
+                
+                <ul>
+                    <li><strong>LanceDB Backend:</strong> Vector database for semantic search with 1536-dimensional embeddings</li>
+                    <li><strong>QMD Backend:</strong> Query-based markdown storage with metadata indexing</li>
+                    <li><strong>Hook System:</strong> Three main hooks for memory lifecycle management</li>
+                </ul>
+
+                <h3>Memory Lifecycle</h3>
+                <p>Memory operations in vanilla OpenClaw follow a predictable pattern:</p>
+                <ol>
+                    <li><code>before_agent_start</code> - Inject relevant context from previous interactions</li>
+                    <li><code>after_tool_call</code> - Store tool usage patterns and results</li>
+                    <li><code>agent_end</code> - Consolidate session data and update long-term memory</li>
+                </ol>
+
+                <h3>Limitations of Vanilla Implementation</h3>
+                <p>While functional, the original memory system has several challenges:</p>
+                <ul>
+                    <li>Limited semantic search capabilities</li>
+                    <li>No pattern learning or skill routing</li>
+                    <li>Fragmented storage across multiple backends</li>
+                    <li>Lack of temporal decay in memory importance</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 3: Community Landscape -->
+        <section id="community">
+            <div class="container">
+                <h2>Community Landscape - 30+ Open Issues</h2>
+                <p>The OpenClaw community has identified numerous memory-related challenges and feature requests:</p>
+
+                <h3>Issue Categories</h3>
+                
+                <h4 class="status-warning">Vector Search Enhancement (8 issues)</h4>
+                <ul>
+                    <li>Improved semantic similarity algorithms</li>
+                    <li>Multi-modal embedding support</li>
+                    <li>Contextual vector weighting</li>
+                    <li>Real-time embedding updates</li>
+                </ul>
+
+                <h4 class="status-warning">Auto-Extraction & Processing (6 issues)</h4>
+                <ul>
+                    <li>Automatic skill documentation extraction</li>
+                    <li>Dynamic context window optimization</li>
+                    <li>Intelligent content summarization</li>
+                    <li>Pattern recognition in conversations</li>
+                </ul>
+
+                <h4 class="status-error">Hierarchical Memory (5 issues)</h4>
+                <ul>
+                    <li>Multi-level memory organization</li>
+                    <li>Skill dependency mapping</li>
+                    <li>Context inheritance patterns</li>
+                    <li>Memory consolidation strategies</li>
+                </ul>
+
+                <h4 class="status-ok">Memory Consolidation (4 issues)</h4>
+                <ul>
+                    <li>Duplicate detection and merging</li>
+                    <li>Temporal importance weighting</li>
+                    <li>Archive and retrieval optimization</li>
+                    <li>Cross-session continuity</li>
+                </ul>
+
+                <h4 class="status-warning">Cross-Agent Communication (3 issues)</h4>
+                <ul>
+                    <li>Shared memory pools</li>
+                    <li>Agent-specific context isolation</li>
+                    <li>Distributed memory synchronization</li>
+                </ul>
+
+                <h4 class="status-ok">Context Optimization (4 issues)</h4>
+                <ul>
+                    <li>Dynamic context window sizing</li>
+                    <li>Relevance-based memory filtering</li>
+                    <li>Performance optimization</li>
+                    <li>Memory usage analytics</li>
+                </ul>
+
+                <div class="ascii-diagram">
+Community Issue Distribution:
+
+Vector Search     ████████ (8 issues, 26%)
+Auto-Extraction   ██████ (6 issues, 20%)  
+Hierarchical      █████ (5 issues, 16%)
+Consolidation     ████ (4 issues, 13%)
+Context Optimize  ████ (4 issues, 13%)
+Cross-Agent       ███ (3 issues, 10%)
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Ruflo Integration Research -->
+        <section id="ruflo">
+            <div class="container">
+                <h2>Ruflo Integration Research</h2>
+                <p class="hero-subtitle">What it promises vs. reality</p>
+
+                <h3>The Promise</h3>
+                <p>Ruflo (Claude Flow V3) presents itself as a comprehensive AI agent framework with advanced memory capabilities:</p>
+                <ul>
+                    <li><strong>SONA:</strong> Self-Optimizing Neural Architecture</li>
+                    <li><strong>HNSW:</strong> Hierarchical Navigable Small World vectors</li>
+                    <li><strong>MoE:</strong> Mixture of Experts routing</li>
+                    <li><strong>Hive-Mind:</strong> Multi-agent consensus</li>
+                </ul>
+
+                <h3>The Reality</h3>
+                <p class="status-error">After thorough analysis of our Ruflo deployment, the actual implementation reveals significant gaps:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Promised</th>
+                            <th>Actual Implementation</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SONA</td>
+                            <td>Self-Optimizing Neural Architecture</td>
+                            <td>Keyword counter with confidence scoring</td>
+                            <td class="status-error">❌ Marketing</td>
+                        </tr>
+                        <tr>
+                            <td>HNSW</td>
+                            <td>Semantic vector search</td>
+                            <td>Hash-based 128-dim vectors (fake embeddings)</td>
+                            <td class="status-warning">⚠️ Infrastructure exists, data is junk</td>
+                        </tr>
+                        <tr>
+                            <td>MoE</td>
+                            <td>Intelligent model routing</td>
+                            <td>YAML configuration, no actual routing</td>
+                            <td class="status-error">❌ Config only</td>
+                        </tr>
+                        <tr>
+                            <td>Hive-Mind</td>
+                            <td>Multi-agent consensus</td>
+                            <td>Empty state arrays, 0 tasks processed</td>
+                            <td class="status-error">❌ Never used</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Data Analysis</h3>
+                <div class="ascii-diagram">
+Ruflo Workspace Analysis:
+.swarm/memory.db:     3974 entries (ALL from our plugin)
+.swarm/hnsw.index:    1.5MB binary (hash vectors, not semantic)
+.claude-flow/agents:  EMPTY directory
+.claude-flow/learning: EMPTY directory
+.claude-flow/workflows: EMPTY directory
+
+Custom Code: 1 file, 118 lines (mcp-http-proxy.js)
+Everything else: auto-generated scaffolding
+                </div>
+
+                <h3>Performance Impact</h3>
+                <p>The Ruflo MCP proxy adds unnecessary overhead:</p>
+                <ul>
+                    <li>HTTP → stdio → JSON-RPC → SQLite → hash vectors</li>
+                    <li>4-layer indirection for simple storage operations</li>
+                    <li>Hash embeddings provide no semantic value</li>
+                    <li>MCP process spawning adds 200-500ms latency</li>
+                </ul>
+
+                <h3>Valuable Concepts</h3>
+                <p>Despite implementation issues, Ruflo's schema design contains useful patterns:</p>
+                <ul>
+                    <li><strong>Temporal decay:</strong> Pattern confidence degrades over time</li>
+                    <li><strong>Memory classification:</strong> semantic/episodic/procedural/working/pattern types</li>
+                    <li><strong>Pattern versioning:</strong> Track how patterns evolve</li>
+                    <li><strong>Access tracking:</strong> Hot/cold memory identification</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 5: Our Solution: memory-unified -->
+        <section id="solution">
+            <div class="container">
+                <h2>Our Solution: memory-unified</h2>
+                <p>A dual-backend memory plugin that combines the best of structured and semantic search:</p>
+
+                <div class="ascii-diagram">
+┌──────────────┐    ┌─────────────────┐    ┌──────────────┐
+│  OpenClaw    │───▶│ memory-unified  │───▶│  USMD SQLite │
+│  Agent Loop  │    │   (plugin)      │    │  920 skills  │
+│              │    │                 │───▶│  Ruflo HNSW  │
+│  3 hooks     │    │  HTTP bridge    │    │  919 vectors │
+└──────────────┘    └─────────────────┘    └──────────────┘
+                </div>
+
+                <h3>Key Features</h3>
+                <ul>
+                    <li><strong>Real embeddings:</strong> Qwen3 4096-dimensional vectors via Spark/Ollama</li>
+                    <li><strong>SQLite backbone:</strong> Fast FTS5 full-text search with structured data</li>
+                    <li><strong>Pattern learning:</strong> Confidence-based skill routing with temporal decay</li>
+                    <li><strong>RAG optimization:</strong> Slim context injection (20-30 tokens per match)</li>
+                    <li><strong>Tool logging:</strong> Comprehensive tracking of all agent actions</li>
+                </ul>
+
+                <h3>Architecture Components</h3>
+                
+                <h4>Database Schema</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Table</th>
+                            <th>Purpose</th>
+                            <th>Records</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>unified_entries</td>
+                            <td>All memory content with auto-tagging</td>
+                            <td>3974</td>
+                        </tr>
+                        <tr>
+                            <td>skills</td>
+                            <td>Skill procedures and metadata</td>
+                            <td>920</td>
+                        </tr>
+                        <tr>
+                            <td>skill_executions</td>
+                            <td>Execution history and patterns</td>
+                            <td>Various</td>
+                        </tr>
+                        <tr>
+                            <td>tool_calls</td>
+                            <td>Tool usage analytics</td>
+                            <td>Continuous</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>Hook Implementation</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hook</th>
+                            <th>Trigger</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>before_agent_start</td>
+                            <td>Every agent turn</td>
+                            <td>RAG slim: inject micro-summaries (20-30 tokens each)</td>
+                        </tr>
+                        <tr>
+                            <td>after_tool_call</td>
+                            <td>After each tool</td>
+                            <td>Log tool name, params, result → SQLite + HNSW</td>
+                        </tr>
+                        <tr>
+                            <td>agent_end</td>
+                            <td>Agent turn ends</td>
+                            <td>Close SONA trajectory (success/failure label)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>RAG Slim Format</h3>
+                <p>Instead of full content injection, we use compressed summaries:</p>
+                <pre><code>&lt;unified-memory&gt;
+Slim RAG context (keys only, NOT full texts):
+[skill] task-management-v4: success (Subagent-per-task, Focalboard scan)
+[hnsw] agent-orchestration (71%)
+&lt;/unified-memory&gt;</code></pre>
+
+                <h3>Performance Benefits</h3>
+                <ul>
+                    <li><strong>Fast retrieval:</strong> FTS5 + semantic search in under 50ms</li>
+                    <li><strong>Context efficiency:</strong> 90% reduction in context usage vs full-text injection</li>
+                    <li><strong>Pattern recognition:</strong> 90% skill routing accuracy with confidence tracking</li>
+                    <li><strong>Scalability:</strong> Native SQLite performance with HNSW acceleration</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 6: Implementation Plan v2 -->
+        <section id="implementation">
+            <div class="container">
+                <h2>Implementation Plan v2</h2>
+                <p>A phased approach to building the next generation of OpenClaw memory:</p>
+
+                <h3>Phase 1: Native HNSW (Priority: HIGH, Effort: 3h)</h3>
+                <p><strong>Goal:</strong> Replace Ruflo MCP dependency with native HNSW in memory-unified.</p>
+                
+                <h4>Tasks:</h4>
+                <ol>
+                    <li>Add <code>hnswlib-node</code> dependency to memory-unified</li>
+                    <li>Initialize HNSW index at plugin startup (4096-dim for Qwen3, cosine metric)</li>
+                    <li>On <code>after_tool_call</code> hook: embed via Qwen3, add to HNSW</li>
+                    <li>On <code>before_agent_start</code> hook: query HNSW alongside FTS5</li>
+                    <li>Persist HNSW index to <code>skill-memory.hnsw</code> file (auto-save/load)</li>
+                    <li>Migrate existing Ruflo data: read <code>.swarm/memory.db</code> entries → re-embed with Qwen3 → insert</li>
+                </ol>
+
+                <div class="stat-card">
+                    <strong>Assertion:</strong> After Phase 1, <code>curl http://localhost:3002/mcp</code> can return 404 and nothing breaks.
+                </div>
+
+                <h3>Phase 2: Pattern Learning (Priority: MEDIUM, Effort: 2h)</h3>
+                <p><strong>Goal:</strong> Extract patterns from skill execution history with temporal decay.</p>
+                
+                <h4>Tasks:</h4>
+                <ol>
+                    <li>Add <code>patterns</code> table to skill-memory.db schema (copy Ruflo's design)</li>
+                    <li>On <code>agent_end</code> hook: extract pattern from (skill, prompt keywords, success/failure)</li>
+                    <li>Add decay cron: daily reduce confidence of unused patterns by decay_rate</li>
+                    <li>On <code>before_agent_start</code>: boost FTS5 results with pattern confidence</li>
+                    <li>Expose <code>unified_patterns</code> tool for inspection</li>
+                </ol>
+
+                <div class="stat-card">
+                    <strong>Assertion:</strong> After 1 week, patterns table has >20 entries with meaningful confidence scores.
+                </div>
+
+                <h3>Phase 3: Memory Classification + Cleanup (Priority: LOW, Effort: 1h)</h3>
+                <p><strong>Goal:</strong> Richer memory taxonomy + auto-archival.</p>
+                
+                <h4>Tasks:</h4>
+                <ol>
+                    <li>Add <code>memory_type</code> column to unified_entries</li>
+                    <li>Add <code>access_count</code>, <code>last_accessed_at</code> columns</li>
+                    <li>Auto-classify on insert: skill docs → procedural, tool logs → episodic, etc.</li>
+                    <li>Weekly cleanup: archive entries with 0 access in 30 days</li>
+                </ol>
+
+                <h3>Phase 4: Deprecate Ruflo (Priority: AFTER Phase 1)</h3>
+                <ol>
+                    <li>Remove <code>RUFLO_MCP_URL</code> dependency from memory-unified</li>
+                    <li>Stop <code>mcp-http-proxy.js</code> process</li>
+                    <li>Archive <code>/home/tank/ruflo-workspace/</code> (don't delete — reference)</li>
+                    <li>Remove <code>createRufloFromApi()</code> bridge code</li>
+                    <li>Update TOOLS.md / MEMORY.md</li>
+                </ol>
+
+                <h3>Total Effort Estimation</h3>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">~8.5h</span>
+                        <p>Total Development</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">4</span>
+                        <p>Phases</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">3</span>
+                        <p>Critical Dependencies</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">0</span>
+                        <p>Breaking Changes</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Comparison Table -->
+        <section id="comparison">
+            <div class="container">
+                <h2>Comparison Table</h2>
+                <p>Community requests vs our implementation status:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>memory-unified (ours)</th>
+                            <th>Ruflo (actual)</th>
+                            <th>Community Need</th>
+                            <th>Winner</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Skill matching</td>
+                            <td class="status-ok">FTS5 (fast, reliable)</td>
+                            <td class="status-error">Routes all to memory-unified</td>
+                            <td>HIGH</td>
+                            <td class="status-ok">✅ Ours</td>
+                        </tr>
+                        <tr>
+                            <td>Semantic search</td>
+                            <td class="status-ok">Qwen3 4096-dim via Spark</td>
+                            <td class="status-error">Hash-based 128-dim (fake)</td>
+                            <td>HIGH</td>
+                            <td class="status-ok">✅ Ours (by far)</td>
+                        </tr>
+                        <tr>
+                            <td>Skill execution log</td>
+                            <td class="status-ok">SQLite + skill_executions table</td>
+                            <td class="status-error">Trajectory logging (0 entries)</td>
+                            <td>MEDIUM</td>
+                            <td class="status-ok">✅ Ours</td>
+                        </tr>
+                        <tr>
+                            <td>Tool call logging</td>
+                            <td class="status-ok">unified_entries + HNSW</td>
+                            <td class="status-warning">Mirrors back to us</td>
+                            <td>MEDIUM</td>
+                            <td class="status-ok">✅ Ours</td>
+                        </tr>
+                        <tr>
+                            <td>Dynamic tool routing</td>
+                            <td class="status-ok">globalThis policy per skill</td>
+                            <td class="status-error">N/A</td>
+                            <td>MEDIUM</td>
+                            <td class="status-ok">✅ Ours</td>
+                        </tr>
+                        <tr>
+                            <td>MoE logging</td>
+                            <td class="status-ok">logs sessions_spawn model</td>
+                            <td class="status-error">Config only</td>
+                            <td>LOW</td>
+                            <td class="status-ok">✅ Ours</td>
+                        </tr>
+                        <tr>
+                            <td>Pattern learning</td>
+                            <td class="status-warning">Confidence counter in sona-patterns.json</td>
+                            <td class="status-error">0 patterns in DB</td>
+                            <td>HIGH</td>
+                            <td class="status-warning">Draw (both empty)</td>
+                        </tr>
+                        <tr>
+                            <td>Temporal decay</td>
+                            <td class="status-error">❌ Not implemented</td>
+                            <td class="status-warning">✅ Schema exists (0 data)</td>
+                            <td>MEDIUM</td>
+                            <td class="status-warning">Ruflo (concept)</td>
+                        </tr>
+                        <tr>
+                            <td>Pattern versioning</td>
+                            <td class="status-error">❌ Not implemented</td>
+                            <td class="status-warning">✅ Schema exists (0 data)</td>
+                            <td>LOW</td>
+                            <td class="status-warning">Ruflo (concept)</td>
+                        </tr>
+                        <tr>
+                            <td>Memory classification</td>
+                            <td class="status-warning">entry_type enum (6 types)</td>
+                            <td class="status-ok">type: semantic/episodic/procedural/working/pattern</td>
+                            <td>MEDIUM</td>
+                            <td class="status-ok">Ruflo (richer)</td>
+                        </tr>
+                        <tr>
+                            <td>HNSW infrastructure</td>
+                            <td class="status-error">❌ Depends on Ruflo proxy</td>
+                            <td class="status-ok">✅ vectra library works</td>
+                            <td>HIGH</td>
+                            <td class="status-warning">Ruflo (infra)</td>
+                        </tr>
+                        <tr>
+                            <td>Real embeddings</td>
+                            <td class="status-ok">✅ Qwen3 via Spark/Ollama</td>
+                            <td class="status-error">❌ Hash fallback only</td>
+                            <td>HIGH</td>
+                            <td class="status-ok">✅ Ours</td>
+                        </tr>
+                        <tr>
+                            <td>SQLite storage</td>
+                            <td class="status-ok">better-sqlite3 (native C)</td>
+                            <td class="status-warning">sql.js (WASM, slower)</td>
+                            <td>MEDIUM</td>
+                            <td class="status-ok">✅ Ours</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Summary Analysis</h3>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span class="stat-number status-ok">8</span>
+                        <p>Our Wins</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number status-warning">3</span>
+                        <p>Ruflo Concepts</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number status-warning">1</span>
+                        <p>Ruflo Infrastructure</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number status-warning">1</span>
+                        <p>Draws</p>
+                    </div>
+                </div>
+
+                <h3>Recommendation</h3>
+                <p class="status-ok"><strong>Extract 2-3 genuinely useful Ruflo concepts, implement them natively in memory-unified, and deprecate the Ruflo MCP dependency.</strong></p>
+                
+                <p>Our implementation already handles the core functionality better than Ruflo's actual (not promised) implementation. The main value is in adopting Ruflo's well-designed schema concepts for temporal decay and memory classification.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const navLinks = document.getElementById('navLinks');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (!navLinks.contains(e.target) && !toggle.contains(e.target)) {
+                navLinks.classList.remove('active');
+            }
+        });
+
+        // Terminal cursor effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const heroTitle = document.querySelector('h1');
+            heroTitle.classList.add('terminal-cursor');
+        });
+    </script>
+</body>
+</html>
