@@ -1,892 +1,358 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenClaw Memory: From Community Chaos to Unified Architecture</title>
+    <title>OpenClaw Memory — Od Chaosu do Unified Architecture</title>
+    <meta name="description" content="Jak rozwiązaliśmy zarządzanie pamięcią AI agentów — porównanie vanilla OpenClaw, community requests i naszego memory-unified.">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #2a2a2a;
-            --text-primary: #00ff41;
-            --text-secondary: #00cc33;
-            --text-accent: #ffff00;
-            --text-muted: #666;
-            --border-color: #333;
-            --terminal-green: #00ff41;
-            --warning: #ff9500;
-            --error: #ff0040;
+            --bg-0:#09090b;--bg-1:#0f0f12;--bg-2:#18181b;--bg-3:#1e1e23;--bg-card:#141419;
+            --border:#27272a;--border-subtle:#1e1e23;
+            --text-0:#fafafa;--text-1:#d4d4d8;--text-2:#a1a1aa;--text-3:#71717a;
+            --green:#22c55e;--green-glow:rgba(34,197,94,0.15);
+            --amber:#f59e0b;--amber-glow:rgba(245,158,11,0.1);
+            --red:#ef4444;--red-glow:rgba(239,68,68,0.1);
+            --blue:#3b82f6;--blue-glow:rgba(59,130,246,0.1);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Courier New', monospace;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Header & Navigation */
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-            padding: 1rem 0;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--text-accent);
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--text-primary);
-        }
-
-        /* Main Content */
-        main {
-            margin-top: 80px;
-        }
-
-        section {
-            padding: 4rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        h1, h2, h3 {
-            color: var(--text-accent);
-            margin-bottom: 1rem;
-        }
-
-        h1 {
-            font-size: 3rem;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        h2 {
-            font-size: 2rem;
-            border-left: 4px solid var(--text-primary);
-            padding-left: 1rem;
-        }
-
-        h3 {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-        }
-
-        p {
-            margin-bottom: 1rem;
-            color: var(--text-secondary);
-        }
-
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 8rem 0;
-            background: linear-gradient(45deg, var(--bg-primary), var(--bg-secondary));
-        }
-
-        .hero-subtitle {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-        }
-
-        .hero-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-top: 4rem;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            padding: 2rem;
-            text-align: center;
-            border-radius: 8px;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            color: var(--text-accent);
-            font-weight: bold;
-            display: block;
-        }
-
-        /* Code Blocks & ASCII Art */
-        pre, code {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            padding: 1rem;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            overflow-x: auto;
-        }
-
-        pre {
-            margin: 1rem 0;
-            white-space: pre-wrap;
-        }
-
-        .ascii-diagram {
-            background: var(--bg-tertiary);
-            border: 2px solid var(--text-primary);
-            padding: 1.5rem;
-            margin: 2rem 0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            line-height: 1.2;
-            overflow-x: auto;
-        }
-
-        /* Tables */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 2rem 0;
-            background: var(--bg-secondary);
-        }
-
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 0.75rem;
-            text-align: left;
-        }
-
-        th {
-            background: var(--bg-tertiary);
-            color: var(--text-accent);
-            font-weight: bold;
-        }
-
-        td {
-            color: var(--text-secondary);
-        }
-
-        /* Lists */
-        ul, ol {
-            margin-left: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        li {
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-        }
-
-        /* Status Indicators */
-        .status-ok { color: var(--text-primary); }
-        .status-warning { color: var(--warning); }
-        .status-error { color: var(--error); }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .hero-stats {
-                grid-template-columns: 1fr;
-            }
-            
-            .container {
-                padding: 0 15px;
-            }
-        }
-
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* Terminal Effect */
-        .terminal-cursor::after {
-            content: '█';
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        /* Mobile Menu Toggle */
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .mobile-menu-toggle {
-                display: block;
-            }
-            
-            .nav-links {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background: var(--bg-primary);
-                flex-direction: column;
-                padding: 1rem;
-                border-top: 1px solid var(--border-color);
-                display: none;
-            }
-            
-            .nav-links.active {
-                display: flex;
-            }
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-0);color:var(--text-1);line-height:1.7;-webkit-font-smoothing:antialiased}
+        .container{max-width:1100px;margin:0 auto;padding:0 24px}
+        nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(9,9,11,0.85);backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--border-subtle)}
+        nav .container{display:flex;align-items:center;justify-content:space-between;height:56px}
+        .nav-brand{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--green);font-size:0.9rem;text-decoration:none}
+        .nav-links{display:flex;gap:1.5rem;list-style:none}
+        .nav-links a{color:var(--text-3);text-decoration:none;font-size:0.82rem;font-weight:500;transition:color 0.2s}
+        .nav-links a:hover{color:var(--text-0)}
+        .hero{padding:140px 0 80px;background:linear-gradient(135deg,var(--bg-0) 0%,#0c1a0f 50%,var(--bg-0) 100%);border-bottom:1px solid var(--border-subtle);text-align:center}
+        .hero-badge{display:inline-block;padding:6px 16px;border-radius:100px;background:var(--green-glow);border:1px solid rgba(34,197,94,0.25);color:var(--green);font-size:0.78rem;font-weight:600;margin-bottom:24px;letter-spacing:0.04em;text-transform:uppercase}
+        .hero h1{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;color:var(--text-0);line-height:1.15;margin-bottom:16px;letter-spacing:-0.03em}
+        .hero h1 span{color:var(--green)}
+        .hero-sub{font-size:1.15rem;color:var(--text-2);max-width:640px;margin:0 auto 48px;line-height:1.6}
+        .hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;max-width:800px;margin:0 auto}
+        .stat{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px 16px;text-align:center}
+        .stat-num{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:var(--green);display:block}
+        .stat-label{font-size:0.82rem;color:var(--text-3);margin-top:4px}
+        section{padding:80px 0;border-bottom:1px solid var(--border-subtle)}
+        section:last-of-type{border-bottom:none}
+        .section-label{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--green);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px}
+        .section-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;color:var(--text-0);letter-spacing:-0.02em;margin-bottom:12px}
+        .section-desc{font-size:1rem;color:var(--text-2);max-width:680px;margin-bottom:40px;line-height:1.7}
+        .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+        .card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px}
+        .card-icon{font-size:1.5rem;margin-bottom:12px}
+        .card h3{font-size:1.05rem;font-weight:600;color:var(--text-0);margin-bottom:8px}
+        .card p{font-size:0.88rem;color:var(--text-2);line-height:1.6}
+        .card-tag{display:inline-block;padding:2px 10px;border-radius:6px;font-size:0.72rem;font-weight:600;margin-top:12px}
+        .tag-broken{background:var(--red-glow);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+        .tag-ok{background:var(--green-glow);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+        .tag-warn{background:var(--amber-glow);color:var(--amber);border:1px solid rgba(245,158,11,0.2)}
+        .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);background:var(--bg-card)}
+        table{width:100%;border-collapse:collapse;font-size:0.88rem}
+        thead{background:var(--bg-3)}
+        th{padding:14px 16px;text-align:left;font-weight:600;color:var(--text-0);font-size:0.8rem;letter-spacing:0.03em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap}
+        td{padding:14px 16px;border-bottom:1px solid var(--border-subtle);color:var(--text-2);vertical-align:top}
+        tr:last-child td{border-bottom:none}
+        tr:hover td{background:rgba(255,255,255,0.02)}
+        td:first-child{font-weight:600;color:var(--text-1);white-space:nowrap}
+        .cell-ok{color:var(--green);font-weight:500}
+        .cell-warn{color:var(--amber);font-weight:500}
+        .cell-bad{color:var(--red);font-weight:500}
+        .cell-none{color:var(--text-3)}
+        .issue-cat{margin-bottom:28px}
+        .issue-cat-title{font-size:0.95rem;font-weight:600;color:var(--text-0);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+        .issue-count{background:var(--bg-3);color:var(--text-3);border-radius:100px;padding:2px 10px;font-size:0.72rem;font-weight:600}
+        .issue-list{list-style:none}
+        .issue-list li{font-size:0.85rem;color:var(--text-2);padding:4px 0}
+        .issue-list a{color:var(--blue);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:500}
+        .issue-list a:hover{text-decoration:underline}
+        .arch-block{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:32px;margin:24px 0;font-family:'JetBrains Mono',monospace;font-size:0.82rem;line-height:1.5;color:var(--green);white-space:pre;overflow-x:auto}
+        .phase{margin-bottom:24px}
+        .phase-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+        .phase-badge{background:var(--green-glow);color:var(--green);border:1px solid rgba(34,197,94,0.25);padding:4px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+        .phase-badge.p1{background:var(--amber-glow);color:var(--amber);border-color:rgba(245,158,11,0.25)}
+        .phase-badge.p2{background:var(--blue-glow);color:var(--blue);border-color:rgba(59,130,246,0.25)}
+        .phase h3{font-size:1.05rem;font-weight:600;color:var(--text-0)}
+        .phase p{font-size:0.88rem;color:var(--text-2);margin-top:4px}
+        .phase-meta{display:flex;gap:16px;margin-top:8px;font-size:0.78rem;color:var(--text-3)}
+        .ruflo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+        .ruflo-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px}
+        .ruflo-card h4{font-size:0.95rem;font-weight:600;color:var(--text-0);margin-bottom:4px}
+        .ruflo-promised{font-size:0.82rem;color:var(--text-3);margin-bottom:8px;font-style:italic}
+        .ruflo-actual{font-size:0.85rem;color:var(--red)}
+        .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:32px}
+        .summary-item{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+        .summary-item .big{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;display:block}
+        .summary-item .label{font-size:0.8rem;color:var(--text-3);margin-top:4px}
+        .big-green{color:var(--green)}.big-amber{color:var(--amber)}.big-red{color:var(--red)}
+        footer{padding:40px 0;border-top:1px solid var(--border-subtle);text-align:center;color:var(--text-3);font-size:0.82rem}
+        footer a{color:var(--green);text-decoration:none}
+        footer a:hover{text-decoration:underline}
+        @media(max-width:768px){.nav-links{display:none}.hero{padding:100px 0 60px}section{padding:56px 0}.card-grid{grid-template-columns:1fr}.ruflo-grid{grid-template-columns:1fr}th,td{padding:10px 12px;font-size:0.82rem}}
     </style>
 </head>
 <body>
-    <header>
-        <nav class="container">
-            <a href="#hero" class="logo">OpenClaw Memory Analysis</a>
-            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#hero">Hero</a></li>
-                <li><a href="#vanilla">Vanilla OpenClaw</a></li>
-                <li><a href="#community">Community</a></li>
-                <li><a href="#ruflo">Ruflo Research</a></li>
-                <li><a href="#solution">Our Solution</a></li>
-                <li><a href="#implementation">Implementation</a></li>
-                <li><a href="#comparison">Comparison</a></li>
+<nav><div class="container">
+    <a href="#" class="nav-brand">🧠 openclaw/memory</a>
+    <ul class="nav-links">
+        <li><a href="#vanilla">Vanilla</a></li>
+        <li><a href="#community">Community</a></li>
+        <li><a href="#ruflo">Ruflo</a></li>
+        <li><a href="#solution">Nasze rozwiązanie</a></li>
+        <li><a href="#comparison">Porównanie</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+    </ul>
+</div></nav>
+
+<section class="hero"><div class="container">
+    <div class="hero-badge">Open Source Research · Marzec 2026</div>
+    <h1>OpenClaw Memory:<br><span>Od Chaosu do Architektury</span></h1>
+    <p class="hero-sub">Jak wygląda zarządzanie pamięcią AI agentów w OpenClaw — co oferuje vanilla, czego chce community, co zbudowaliśmy i dlaczego to działa lepiej.</p>
+    <div class="hero-stats">
+        <div class="stat"><span class="stat-num">30+</span><span class="stat-label">Otwartych issues o pamięci</span></div>
+        <div class="stat"><span class="stat-num">1836</span><span class="stat-label">Wszystkich memory issues</span></div>
+        <div class="stat"><span class="stat-num">4096</span><span class="stat-label">Wymiarów wektora (Qwen3)</span></div>
+        <div class="stat"><span class="stat-num">$0</span><span class="stat-label">Koszt embeddingów (lokalnie)</span></div>
+    </div>
+</div></section>
+
+<!-- VANILLA -->
+<section id="vanilla"><div class="container">
+    <div class="section-label">01 — Stan obecny</div>
+    <h2 class="section-title">Jak działa pamięć w Vanilla OpenClaw</h2>
+    <p class="section-desc">OpenClaw oferuje trzy oficjalne backendy pamięci. Każdy ma swoje ograniczenia — a community szuka czegoś lepszego.</p>
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-icon">📄</div>
+            <h3>memory-core (domyślny)</h3>
+            <p>Pliki Markdown jako source of truth. <code>MEMORY.md</code> + <code>memory/YYYY-MM-DD.md</code>. Semantic search via sqlite-vec. Embeddingi wymagają API key (OpenAI/Gemini/Voyage).</p>
+            <p style="margin-top:8px;color:var(--amber)">⚠️ MEMORY.md wstrzykiwany W CAŁOŚCI mimo memory_search (<a href="https://github.com/openclaw/openclaw/issues/26949" style="color:var(--blue)">#26949</a>)</p>
+            <span class="card-tag tag-warn">Działa, ale marnuje tokeny</span>
+        </div>
+        <div class="card">
+            <div class="card-icon">🗄️</div>
+            <h3>memory-lancedb (plugin)</h3>
+            <p>LanceDB vector store, OpenAI 1536-dim. Auto-capture działa, ale <code>autoRecall</code> domyślnie <strong>wyłączony</strong> — pamięć się zapisuje, ale nigdy nie wraca.</p>
+            <p style="margin-top:8px;color:var(--red)"><a href="https://github.com/openclaw/openclaw/issues/25202" style="color:var(--blue)">#25202</a> — „persistent memory non-functional"</p>
+            <span class="card-tag tag-broken">Zepsuty out of the box</span>
+        </div>
+        <div class="card">
+            <div class="card-icon">🔬</div>
+            <h3>QMD (experimental)</h3>
+            <p>BM25 + vectors + reranking sidecar. Wymaga <code>bun install qmd</code>. Pierwsze wyszukiwanie pobiera modele GGUF.</p>
+            <p style="margin-top:8px;color:var(--red)"><a href="https://github.com/openclaw/openclaw/issues/28181" style="color:var(--blue)">#28181</a> — zwraca puste wyniki</p>
+            <span class="card-tag tag-broken">Puste wyniki</span>
+        </div>
+    </div>
+</div></section>
+
+<!-- COMMUNITY -->
+<section id="community"><div class="container">
+    <div class="section-label">02 — Community</div>
+    <h2 class="section-title">Czego chcą użytkownicy OpenClaw</h2>
+    <p class="section-desc">30+ otwartych issues o pamięci. Ludzie desperacko szukają: lokalne embeddingi, auto-zapis, temporal decay, cross-agent memory.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px">
+        <div class="issue-cat">
+            <div class="issue-cat-title">🔍 Semantic / Vector Search <span class="issue-count">8 issues</span></div>
+            <ul class="issue-list">
+                <li><a href="https://github.com/openclaw/openclaw/issues/7021">#7021</a> PowerMem jako backend</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/14049">#14049</a> Qdrant persistent memory</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/13562">#13562</a> Ollama embeddingi (top request!)</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/10553">#10553</a> Integracja MemOS</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/21006">#21006</a> Plugin memory-x</li>
             </ul>
-        </nav>
-    </header>
+        </div>
+        <div class="issue-cat">
+            <div class="issue-cat-title">💾 Auto-ekstrakcja <span class="issue-count">4 issues</span></div>
+            <ul class="issue-list">
+                <li><a href="https://github.com/openclaw/openclaw/issues/18749">#18749</a> Automatyczna ekstrakcja faktów</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/11619">#11619</a> Okresowy auto-save</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/8185">#8185</a> Memory flush przy /new</li>
+            </ul>
+        </div>
+        <div class="issue-cat">
+            <div class="issue-cat-title">🏗️ Hierarchiczna kompresja <span class="issue-count">3 issues</span></div>
+            <ul class="issue-list">
+                <li><a href="https://github.com/openclaw/openclaw/issues/19017">#19017</a> Fractal Memory System</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/20367">#20367</a> Local LLM memory manager</li>
+            </ul>
+        </div>
+        <div class="issue-cat">
+            <div class="issue-cat-title">⏳ Konsolidacja i decay <span class="issue-count">2 issues</span></div>
+            <ul class="issue-list">
+                <li><a href="https://github.com/openclaw/openclaw/issues/17711">#17711</a> Memory Consolidation Hooks</li>
+            </ul>
+        </div>
+        <div class="issue-cat">
+            <div class="issue-cat-title">🤝 Cross-agent <span class="issue-count">3 issues</span></div>
+            <ul class="issue-list">
+                <li><a href="https://github.com/openclaw/openclaw/issues/27863">#27863</a> orchestrator → subagent push</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/9264">#9264</a> Cross-Channel Context Sharing</li>
+            </ul>
+        </div>
+        <div class="issue-cat">
+            <div class="issue-cat-title">⚡ Optymalizacja kontekstu <span class="issue-count">4 issues</span></div>
+            <ul class="issue-list">
+                <li><a href="https://github.com/openclaw/openclaw/issues/26949">#26949</a> MEMORY.md duplikacja</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/9157">#9157</a> 93.5% tokenów marnowane</li>
+                <li><a href="https://github.com/openclaw/openclaw/issues/30128">#30128</a> Claude Memory API</li>
+            </ul>
+        </div>
+    </div>
+    <div class="summary-grid" style="margin-top:40px">
+        <div class="summary-item"><span class="big big-red">0</span><span class="label">Rozwiązanych issues</span></div>
+        <div class="summary-item"><span class="big big-amber">3</span><span class="label">Buggy backendy</span></div>
+        <div class="summary-item"><span class="big big-green">6/7</span><span class="label">Kategorii adresowanych przez nas</span></div>
+    </div>
+</div></section>
 
-    <main>
-        <!-- Section 1: Hero -->
-        <section id="hero" class="hero">
-            <div class="container">
-                <h1>OpenClaw Memory</h1>
-                <p class="hero-subtitle">From Community Chaos to Unified Architecture</p>
-                <div class="hero-stats">
-                    <div class="stat-card">
-                        <span class="stat-number">30+</span>
-                        <p>Open Issues</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">920</span>
-                        <p>Skills in Database</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">4096</span>
-                        <p>Vector Dimensions</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">3974</span>
-                        <p>Memory Entries</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+<!-- RUFLO -->
+<section id="ruflo"><div class="container">
+    <div class="section-label">03 — Ruflo Research</div>
+    <h2 class="section-title">Ruflo (Claude Flow V3) — Obietnice vs Rzeczywistość</h2>
+    <p class="section-desc">Ruflo obiecuje SONA, MoE, HNSW, Hive-Mind. Po analizie 7MB danych: <strong>marketing vs puste foldery</strong>. Ale schemat bazy ma wartościowe koncepcje.</p>
+    <div class="ruflo-grid">
+        <div class="ruflo-card">
+            <h4>SONA</h4>
+            <div class="ruflo-promised">Obietnica: „Self-Optimizing Neural Architecture"</div>
+            <div class="ruflo-actual">Rzeczywistość: Keyword counter. 47/48 patterns → ten sam agent.</div>
+            <span class="card-tag tag-broken">❌ Placeholder</span>
+        </div>
+        <div class="ruflo-card">
+            <h4>HNSW</h4>
+            <div class="ruflo-promised">Obietnica: Semantic vector search</div>
+            <div class="ruflo-actual">Rzeczywistość: Hash 128-dim vectors. Folder models/ PUSTY.</div>
+            <span class="card-tag tag-broken">❌ Fake embeddingi</span>
+        </div>
+        <div class="ruflo-card">
+            <h4>MoE</h4>
+            <div class="ruflo-promised">Obietnica: Intelligent model routing</div>
+            <div class="ruflo-actual">Rzeczywistość: Plik YAML. Zero kodu routującego.</div>
+            <span class="card-tag tag-broken">❌ Config only</span>
+        </div>
+        <div class="ruflo-card">
+            <h4>Hive-Mind</h4>
+            <div class="ruflo-promised">Obietnica: Multi-agent consensus</div>
+            <div class="ruflo-actual">Rzeczywistość: state.json z zerami. 0 tasks.</div>
+            <span class="card-tag tag-broken">❌ Martwy kod</span>
+        </div>
+    </div>
+    <div class="arch-block" style="margin-top:32px;color:var(--text-2)">Ruflo Workspace — co NAPRAWDĘ jest w środku:
 
-        <!-- Section 2: How Memory Works in Vanilla OpenClaw -->
-        <section id="vanilla">
-            <div class="container">
-                <h2>How Memory Works in Vanilla OpenClaw</h2>
-                <p>OpenClaw's original memory system consists of three main backends:</p>
-                
-                <div class="ascii-diagram">
-┌──────────────┐    ┌─────────────────┐    ┌──────────────┐
-│  OpenClaw    │───▶│  memory-core    │───▶│   LanceDB    │
-│  Agent Loop  │    │    (plugin)     │    │   Vector     │
-│              │    │                 │───▶│   Database   │
-│  Hook API    │    │  Query Engine   │    │     QMD      │
-└──────────────┘    └─────────────────┘    └──────────────┘
-                </div>
+.swarm/memory.db:        3974 wpisów (WSZYSTKIE z naszego pluginu!)
+.swarm/hnsw.index:       1.5MB binary (hash vectors, nie semantyczne)
+.claude-flow/agents/:    PUSTY katalog
+.claude-flow/learning/:  PUSTY katalog
+.claude-flow/workflows/: PUSTY katalog
+.claude-flow/models/:    PUSTY (MiniLM nie pobrany)
 
-                <h3>Memory-Core Architecture</h3>
-                <p>The memory-core plugin provides the foundational memory infrastructure with several backend options:</p>
-                
-                <ul>
-                    <li><strong>LanceDB Backend:</strong> Vector database for semantic search with 1536-dimensional embeddings</li>
-                    <li><strong>QMD Backend:</strong> Query-based markdown storage with metadata indexing</li>
-                    <li><strong>Hook System:</strong> Three main hooks for memory lifecycle management</li>
-                </ul>
+Własny kod:  1 plik, 118 linii (mcp-http-proxy.js)
+Reszta:      auto-generated scaffolding
 
-                <h3>Memory Lifecycle</h3>
-                <p>Memory operations in vanilla OpenClaw follow a predictable pattern:</p>
-                <ol>
-                    <li><code>before_agent_start</code> - Inject relevant context from previous interactions</li>
-                    <li><code>after_tool_call</code> - Store tool usage patterns and results</li>
-                    <li><code>agent_end</code> - Consolidate session data and update long-term memory</li>
-                </ol>
+<span style="color:var(--green)">Wartościowe koncepcje do przejęcia:</span>
+  → temporal decay (confidence *= decay_rate)
+  → memory classification (semantic/episodic/procedural/working/pattern)
+  → pattern versioning + access tracking</div>
+</div></section>
 
-                <h3>Limitations of Vanilla Implementation</h3>
-                <p>While functional, the original memory system has several challenges:</p>
-                <ul>
-                    <li>Limited semantic search capabilities</li>
-                    <li>No pattern learning or skill routing</li>
-                    <li>Fragmented storage across multiple backends</li>
-                    <li>Lack of temporal decay in memory importance</li>
-                </ul>
-            </div>
-        </section>
+<!-- OUR SOLUTION -->
+<section id="solution"><div class="container">
+    <div class="section-label">04 — Nasze rozwiązanie</div>
+    <h2 class="section-title">memory-unified — Zunifikowana architektura</h2>
+    <p class="section-desc">Jeden plugin, dwa backendy, trzy hooki. SQLite + FTS5 + HNSW z prawdziwymi embeddingami. Zero zewnętrznych API.</p>
+    <div class="arch-block">┌───────────────────────────────────────────────────────────┐
+│                   memory-unified plugin                    │
+├────────────────────────┬──────────────────────────────────┤
+│    USMD SQLite         │       HNSW Vector Search         │
+│    (strukturalne)      │       (semantyczne)              │
+│                        │                                  │
+│  • unified_entries     │  • Qwen3 embeddingi 4096-dim     │
+│  • skills (27)         │  • Ollama na Spark (lokalnie!)   │
+│  • skill_executions    │  • NVIDIA Blackwell 128GB        │
+│  • tool_calls          │  • cosine similarity             │
+│  • FTS5 full-text      │  • persystencja na dysk          │
+└────────────────────────┴──────────────────────────────────┘
+         │                          │
+         ▼                          ▼
+   ┌──────────┐            ┌──────────────┐
+   │ before_  │            │ after_tool_  │
+   │ agent_   │            │ call hook    │
+   │ start    │            │ (auto-log)   │
+   │ (RAG     │            └──────────────┘
+   │  slim)   │                    │
+   └──────────┘                    ▼
+         │                 ┌──────────────┐
+         ▼                 │  agent_end   │
+   ┌─────────────────┐    │  (trajectory │
+   │ Kontekst agenta │    │   close)     │
+   │ 3-12 narzędzi   │    └──────────────┘
+   │ (z 93 → 51)     │
+   │ + mikro-podsum.  │
+   │   20-30 tok each │
+   └─────────────────┘</div>
+    <div class="card-grid" style="margin-top:32px">
+        <div class="card"><div class="card-icon">🎯</div><h3>RAG Slim</h3><p>Mikro-podsumowania 20-30 tokenów zamiast pełnego tekstu. <strong>90% mniej tokenów</strong> na pamięć = więcej miejsca na rozmowę.</p></div>
+        <div class="card"><div class="card-icon">🏠</div><h3>Lokalne embeddingi</h3><p>Qwen3 na NVIDIA Blackwell (128GB) via Ollama. <strong>$0 kosztów API</strong>. Brak zależności od OpenAI/Gemini.</p></div>
+        <div class="card"><div class="card-icon">⚡</div><h3>Dynamiczny routing</h3><p>Z 93 narzędzi do 3-12 per request. <strong>80% mniej narzędzi</strong> w kontekście — szybciej, taniej, celniej.</p></div>
+        <div class="card"><div class="card-icon">🔄</div><h3>Auto-capture</h3><p>Hook <code>after_tool_call</code> loguje każde wywołanie. <strong>Nic nie ginie</strong> nawet jeśli model zapomni zapisać.</p></div>
+    </div>
+</div></section>
 
-        <!-- Section 3: Community Landscape -->
-        <section id="community">
-            <div class="container">
-                <h2>Community Landscape - 30+ Open Issues</h2>
-                <p>The OpenClaw community has identified numerous memory-related challenges and feature requests:</p>
+<!-- COMPARISON -->
+<section id="comparison"><div class="container">
+    <div class="section-label">05 — Porównanie</div>
+    <h2 class="section-title">Co ma OpenClaw, co my, co to daje</h2>
+    <p class="section-desc">Pełna tabelka: Vanilla OpenClaw vs memory-unified — jakie problemy rozwiązujemy i jakie korzyści daje nasze podejście.</p>
+    <div class="table-wrap"><table>
+        <thead><tr><th>Funkcja</th><th>Vanilla OpenClaw</th><th>My (memory-unified)</th><th>Problem</th><th>Korzyść</th></tr></thead>
+        <tbody>
+            <tr><td>Przechowywanie</td><td class="cell-warn">Pliki Markdown</td><td class="cell-ok">SQLite + FTS5 + HNSW</td><td>Brak struktury, brak semantic search</td><td>Szybkie wyszukiwanie po treści i znaczeniu</td></tr>
+            <tr><td>Semantic search</td><td class="cell-warn">sqlite-vec (API key)</td><td class="cell-ok">Qwen3 4096-dim (lokalne)</td><td>Płatne embeddingi (#13562)</td><td><strong>$0 kosztów</strong> — własny GPU</td></tr>
+            <tr><td>Kontekst pamięci</td><td class="cell-bad">MEMORY.md w całości</td><td class="cell-ok">RAG slim (20-30 tok)</td><td>93.5% tokenów marnowane (#9157)</td><td><strong>90% mniej tokenów</strong></td></tr>
+            <tr><td>Auto-zapis</td><td class="cell-warn">Pre-compaction flush</td><td class="cell-ok">Hook after_tool_call</td><td>Model zapomina (#18749)</td><td><strong>Nic nie ginie</strong></td></tr>
+            <tr><td>Vector search</td><td class="cell-bad">LanceDB (#25202) / QMD (#28181)</td><td class="cell-ok">HNSW natywny</td><td>Oba backendy buggy</td><td><strong>Działa out of the box</strong></td></tr>
+            <tr><td>Pattern learning</td><td class="cell-none">❌ Brak (RFC #17711)</td><td class="cell-ok">patterns + confidence</td><td>Brak uczenia się</td><td>Agent <strong>uczy się z czasem</strong></td></tr>
+            <tr><td>Temporal decay</td><td class="cell-none">❌ Brak</td><td class="cell-ok">confidence *= decay daily</td><td>Stare fakty zaśmiecają</td><td><strong>Samooczyszczająca się</strong> pamięć</td></tr>
+            <tr><td>Klasyfikacja</td><td class="cell-none">❌ Jeden typ</td><td class="cell-ok">5 typów pamięci</td><td>Wszystko = jeden typ</td><td><strong>Celniejsze wyniki</strong></td></tr>
+            <tr><td>Routing narzędzi</td><td class="cell-bad">93 narzędzia zawsze</td><td class="cell-ok">3-12 dynamicznie</td><td>Model się gubi</td><td><strong>80% mniej</strong> narzędzi</td></tr>
+            <tr><td>Skill routing</td><td class="cell-warn">Text matching</td><td class="cell-ok">FTS5 + HNSW + patterns</td><td>Złe dopasowania</td><td><strong>Precyzyjny matching</strong></td></tr>
+            <tr><td>Cross-agent</td><td class="cell-none">❌ Brak (#27863)</td><td class="cell-warn">sessions_send + SQLite</td><td>Subagent od zera</td><td>Dziedziczenie wiedzy</td></tr>
+            <tr><td>Lokalne embeddingi</td><td class="cell-warn">node-llama-cpp</td><td class="cell-ok">Qwen3 via Ollama</td><td>Top request (#13562)</td><td><strong>Zero zależności API</strong></td></tr>
+        </tbody>
+    </table></div>
+    <div class="summary-grid">
+        <div class="summary-item"><span class="big big-green">93 → 12</span><span class="label">Narzędzia w kontekście</span></div>
+        <div class="summary-item"><span class="big big-green">~90%</span><span class="label">Mniej tokenów na pamięć</span></div>
+        <div class="summary-item"><span class="big big-green">$0.00</span><span class="label">Koszt embeddingów</span></div>
+        <div class="summary-item"><span class="big big-green">1</span><span class="label">Plugin (zamiast 3 buggy)</span></div>
+    </div>
+</div></section>
 
-                <h3>Issue Categories</h3>
-                
-                <h4 class="status-warning">Vector Search Enhancement (8 issues)</h4>
-                <ul>
-                    <li>Improved semantic similarity algorithms</li>
-                    <li>Multi-modal embedding support</li>
-                    <li>Contextual vector weighting</li>
-                    <li>Real-time embedding updates</li>
-                </ul>
+<!-- ROADMAP -->
+<section id="roadmap"><div class="container">
+    <div class="section-label">06 — Roadmap</div>
+    <h2 class="section-title">Plan implementacji v2</h2>
+    <p class="section-desc">4 fazy, ~8.5h. Od natywnego HNSW, przez pattern learning, po deprecjację Ruflo.</p>
+    <div class="phase"><div class="phase-header"><span class="phase-badge">P0</span><h3>Natywny HNSW z prawdziwymi embeddingami</h3></div><p>hnswlib-node, Qwen3 4096-dim, cosine, persystencja. Fallback jeśli Spark niedostępny.</p><div class="phase-meta"><span>⏱️ ~3h</span><span>🔥🔥🔥 Krytyczne</span></div></div>
+    <div class="phase"><div class="phase-header"><span class="phase-badge p1">P1</span><h3>Pattern Learning z Temporal Decay</h3></div><p>Tabela patterns + confidence + decay_rate. Hook agent_end. Cron daily decay.</p><div class="phase-meta"><span>⏱️ ~2h</span><span>🔥🔥 Ważne</span></div></div>
+    <div class="phase"><div class="phase-header"><span class="phase-badge p1">P1</span><h3>Migracja + Memory Classification</h3></div><p>Re-embed 1339 wpisów z Ruflo. memory_type, access tracking (hot/cold).</p><div class="phase-meta"><span>⏱️ ~2h</span><span>🔥 Wartościowe</span></div></div>
+    <div class="phase"><div class="phase-header"><span class="phase-badge p2">P2</span><h3>Deprecjacja Ruflo</h3></div><p>Usunięcie MCP proxy, archiwizacja, cleanup dokumentacji.</p><div class="phase-meta"><span>⏱️ ~1h</span><span>🧹 Porządki</span></div></div>
+    <div class="summary-grid" style="margin-top:32px">
+        <div class="summary-item"><span class="big big-green">~8.5h</span><span class="label">Łączny czas</span></div>
+        <div class="summary-item"><span class="big big-green">4</span><span class="label">Fazy</span></div>
+        <div class="summary-item"><span class="big big-green">0</span><span class="label">Breaking changes</span></div>
+    </div>
+</div></section>
 
-                <h4 class="status-warning">Auto-Extraction & Processing (6 issues)</h4>
-                <ul>
-                    <li>Automatic skill documentation extraction</li>
-                    <li>Dynamic context window optimization</li>
-                    <li>Intelligent content summarization</li>
-                    <li>Pattern recognition in conversations</li>
-                </ul>
+<footer><div class="container">
+    <p>Zbudowane przez <a href="https://github.com/numerika-ai">Numerika AI</a> · Marzec 2026</p>
+    <p style="margin-top:8px"><a href="https://github.com/numerika-ai/openclaw-memory-analysis">Źródło na GitHub</a> · <a href="https://github.com/openclaw/openclaw">OpenClaw</a></p>
+</div></footer>
 
-                <h4 class="status-error">Hierarchical Memory (5 issues)</h4>
-                <ul>
-                    <li>Multi-level memory organization</li>
-                    <li>Skill dependency mapping</li>
-                    <li>Context inheritance patterns</li>
-                    <li>Memory consolidation strategies</li>
-                </ul>
-
-                <h4 class="status-ok">Memory Consolidation (4 issues)</h4>
-                <ul>
-                    <li>Duplicate detection and merging</li>
-                    <li>Temporal importance weighting</li>
-                    <li>Archive and retrieval optimization</li>
-                    <li>Cross-session continuity</li>
-                </ul>
-
-                <h4 class="status-warning">Cross-Agent Communication (3 issues)</h4>
-                <ul>
-                    <li>Shared memory pools</li>
-                    <li>Agent-specific context isolation</li>
-                    <li>Distributed memory synchronization</li>
-                </ul>
-
-                <h4 class="status-ok">Context Optimization (4 issues)</h4>
-                <ul>
-                    <li>Dynamic context window sizing</li>
-                    <li>Relevance-based memory filtering</li>
-                    <li>Performance optimization</li>
-                    <li>Memory usage analytics</li>
-                </ul>
-
-                <div class="ascii-diagram">
-Community Issue Distribution:
-
-Vector Search     ████████ (8 issues, 26%)
-Auto-Extraction   ██████ (6 issues, 20%)  
-Hierarchical      █████ (5 issues, 16%)
-Consolidation     ████ (4 issues, 13%)
-Context Optimize  ████ (4 issues, 13%)
-Cross-Agent       ███ (3 issues, 10%)
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 4: Ruflo Integration Research -->
-        <section id="ruflo">
-            <div class="container">
-                <h2>Ruflo Integration Research</h2>
-                <p class="hero-subtitle">What it promises vs. reality</p>
-
-                <h3>The Promise</h3>
-                <p>Ruflo (Claude Flow V3) presents itself as a comprehensive AI agent framework with advanced memory capabilities:</p>
-                <ul>
-                    <li><strong>SONA:</strong> Self-Optimizing Neural Architecture</li>
-                    <li><strong>HNSW:</strong> Hierarchical Navigable Small World vectors</li>
-                    <li><strong>MoE:</strong> Mixture of Experts routing</li>
-                    <li><strong>Hive-Mind:</strong> Multi-agent consensus</li>
-                </ul>
-
-                <h3>The Reality</h3>
-                <p class="status-error">After thorough analysis of our Ruflo deployment, the actual implementation reveals significant gaps:</p>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Component</th>
-                            <th>Promised</th>
-                            <th>Actual Implementation</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>SONA</td>
-                            <td>Self-Optimizing Neural Architecture</td>
-                            <td>Keyword counter with confidence scoring</td>
-                            <td class="status-error">❌ Marketing</td>
-                        </tr>
-                        <tr>
-                            <td>HNSW</td>
-                            <td>Semantic vector search</td>
-                            <td>Hash-based 128-dim vectors (fake embeddings)</td>
-                            <td class="status-warning">⚠️ Infrastructure exists, data is junk</td>
-                        </tr>
-                        <tr>
-                            <td>MoE</td>
-                            <td>Intelligent model routing</td>
-                            <td>YAML configuration, no actual routing</td>
-                            <td class="status-error">❌ Config only</td>
-                        </tr>
-                        <tr>
-                            <td>Hive-Mind</td>
-                            <td>Multi-agent consensus</td>
-                            <td>Empty state arrays, 0 tasks processed</td>
-                            <td class="status-error">❌ Never used</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h3>Data Analysis</h3>
-                <div class="ascii-diagram">
-Ruflo Workspace Analysis:
-.swarm/memory.db:     3974 entries (ALL from our plugin)
-.swarm/hnsw.index:    1.5MB binary (hash vectors, not semantic)
-.claude-flow/agents:  EMPTY directory
-.claude-flow/learning: EMPTY directory
-.claude-flow/workflows: EMPTY directory
-
-Custom Code: 1 file, 118 lines (mcp-http-proxy.js)
-Everything else: auto-generated scaffolding
-                </div>
-
-                <h3>Performance Impact</h3>
-                <p>The Ruflo MCP proxy adds unnecessary overhead:</p>
-                <ul>
-                    <li>HTTP → stdio → JSON-RPC → SQLite → hash vectors</li>
-                    <li>4-layer indirection for simple storage operations</li>
-                    <li>Hash embeddings provide no semantic value</li>
-                    <li>MCP process spawning adds 200-500ms latency</li>
-                </ul>
-
-                <h3>Valuable Concepts</h3>
-                <p>Despite implementation issues, Ruflo's schema design contains useful patterns:</p>
-                <ul>
-                    <li><strong>Temporal decay:</strong> Pattern confidence degrades over time</li>
-                    <li><strong>Memory classification:</strong> semantic/episodic/procedural/working/pattern types</li>
-                    <li><strong>Pattern versioning:</strong> Track how patterns evolve</li>
-                    <li><strong>Access tracking:</strong> Hot/cold memory identification</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Section 5: Our Solution: memory-unified -->
-        <section id="solution">
-            <div class="container">
-                <h2>Our Solution: memory-unified</h2>
-                <p>A dual-backend memory plugin that combines the best of structured and semantic search:</p>
-
-                <div class="ascii-diagram">
-┌──────────────┐    ┌─────────────────┐    ┌──────────────┐
-│  OpenClaw    │───▶│ memory-unified  │───▶│  USMD SQLite │
-│  Agent Loop  │    │   (plugin)      │    │  920 skills  │
-│              │    │                 │───▶│  Ruflo HNSW  │
-│  3 hooks     │    │  HTTP bridge    │    │  919 vectors │
-└──────────────┘    └─────────────────┘    └──────────────┘
-                </div>
-
-                <h3>Key Features</h3>
-                <ul>
-                    <li><strong>Real embeddings:</strong> Qwen3 4096-dimensional vectors via Spark/Ollama</li>
-                    <li><strong>SQLite backbone:</strong> Fast FTS5 full-text search with structured data</li>
-                    <li><strong>Pattern learning:</strong> Confidence-based skill routing with temporal decay</li>
-                    <li><strong>RAG optimization:</strong> Slim context injection (20-30 tokens per match)</li>
-                    <li><strong>Tool logging:</strong> Comprehensive tracking of all agent actions</li>
-                </ul>
-
-                <h3>Architecture Components</h3>
-                
-                <h4>Database Schema</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Table</th>
-                            <th>Purpose</th>
-                            <th>Records</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>unified_entries</td>
-                            <td>All memory content with auto-tagging</td>
-                            <td>3974</td>
-                        </tr>
-                        <tr>
-                            <td>skills</td>
-                            <td>Skill procedures and metadata</td>
-                            <td>920</td>
-                        </tr>
-                        <tr>
-                            <td>skill_executions</td>
-                            <td>Execution history and patterns</td>
-                            <td>Various</td>
-                        </tr>
-                        <tr>
-                            <td>tool_calls</td>
-                            <td>Tool usage analytics</td>
-                            <td>Continuous</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h4>Hook Implementation</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Hook</th>
-                            <th>Trigger</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>before_agent_start</td>
-                            <td>Every agent turn</td>
-                            <td>RAG slim: inject micro-summaries (20-30 tokens each)</td>
-                        </tr>
-                        <tr>
-                            <td>after_tool_call</td>
-                            <td>After each tool</td>
-                            <td>Log tool name, params, result → SQLite + HNSW</td>
-                        </tr>
-                        <tr>
-                            <td>agent_end</td>
-                            <td>Agent turn ends</td>
-                            <td>Close SONA trajectory (success/failure label)</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h3>RAG Slim Format</h3>
-                <p>Instead of full content injection, we use compressed summaries:</p>
-                <pre><code>&lt;unified-memory&gt;
-Slim RAG context (keys only, NOT full texts):
-[skill] task-management-v4: success (Subagent-per-task, Focalboard scan)
-[hnsw] agent-orchestration (71%)
-&lt;/unified-memory&gt;</code></pre>
-
-                <h3>Performance Benefits</h3>
-                <ul>
-                    <li><strong>Fast retrieval:</strong> FTS5 + semantic search in under 50ms</li>
-                    <li><strong>Context efficiency:</strong> 90% reduction in context usage vs full-text injection</li>
-                    <li><strong>Pattern recognition:</strong> 90% skill routing accuracy with confidence tracking</li>
-                    <li><strong>Scalability:</strong> Native SQLite performance with HNSW acceleration</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Section 6: Implementation Plan v2 -->
-        <section id="implementation">
-            <div class="container">
-                <h2>Implementation Plan v2</h2>
-                <p>A phased approach to building the next generation of OpenClaw memory:</p>
-
-                <h3>Phase 1: Native HNSW (Priority: HIGH, Effort: 3h)</h3>
-                <p><strong>Goal:</strong> Replace Ruflo MCP dependency with native HNSW in memory-unified.</p>
-                
-                <h4>Tasks:</h4>
-                <ol>
-                    <li>Add <code>hnswlib-node</code> dependency to memory-unified</li>
-                    <li>Initialize HNSW index at plugin startup (4096-dim for Qwen3, cosine metric)</li>
-                    <li>On <code>after_tool_call</code> hook: embed via Qwen3, add to HNSW</li>
-                    <li>On <code>before_agent_start</code> hook: query HNSW alongside FTS5</li>
-                    <li>Persist HNSW index to <code>skill-memory.hnsw</code> file (auto-save/load)</li>
-                    <li>Migrate existing Ruflo data: read <code>.swarm/memory.db</code> entries → re-embed with Qwen3 → insert</li>
-                </ol>
-
-                <div class="stat-card">
-                    <strong>Assertion:</strong> After Phase 1, <code>curl http://localhost:3002/mcp</code> can return 404 and nothing breaks.
-                </div>
-
-                <h3>Phase 2: Pattern Learning (Priority: MEDIUM, Effort: 2h)</h3>
-                <p><strong>Goal:</strong> Extract patterns from skill execution history with temporal decay.</p>
-                
-                <h4>Tasks:</h4>
-                <ol>
-                    <li>Add <code>patterns</code> table to skill-memory.db schema (copy Ruflo's design)</li>
-                    <li>On <code>agent_end</code> hook: extract pattern from (skill, prompt keywords, success/failure)</li>
-                    <li>Add decay cron: daily reduce confidence of unused patterns by decay_rate</li>
-                    <li>On <code>before_agent_start</code>: boost FTS5 results with pattern confidence</li>
-                    <li>Expose <code>unified_patterns</code> tool for inspection</li>
-                </ol>
-
-                <div class="stat-card">
-                    <strong>Assertion:</strong> After 1 week, patterns table has >20 entries with meaningful confidence scores.
-                </div>
-
-                <h3>Phase 3: Memory Classification + Cleanup (Priority: LOW, Effort: 1h)</h3>
-                <p><strong>Goal:</strong> Richer memory taxonomy + auto-archival.</p>
-                
-                <h4>Tasks:</h4>
-                <ol>
-                    <li>Add <code>memory_type</code> column to unified_entries</li>
-                    <li>Add <code>access_count</code>, <code>last_accessed_at</code> columns</li>
-                    <li>Auto-classify on insert: skill docs → procedural, tool logs → episodic, etc.</li>
-                    <li>Weekly cleanup: archive entries with 0 access in 30 days</li>
-                </ol>
-
-                <h3>Phase 4: Deprecate Ruflo (Priority: AFTER Phase 1)</h3>
-                <ol>
-                    <li>Remove <code>RUFLO_MCP_URL</code> dependency from memory-unified</li>
-                    <li>Stop <code>mcp-http-proxy.js</code> process</li>
-                    <li>Archive <code>/home/tank/ruflo-workspace/</code> (don't delete — reference)</li>
-                    <li>Remove <code>createRufloFromApi()</code> bridge code</li>
-                    <li>Update TOOLS.md / MEMORY.md</li>
-                </ol>
-
-                <h3>Total Effort Estimation</h3>
-                <div class="hero-stats">
-                    <div class="stat-card">
-                        <span class="stat-number">~8.5h</span>
-                        <p>Total Development</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">4</span>
-                        <p>Phases</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">3</span>
-                        <p>Critical Dependencies</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">0</span>
-                        <p>Breaking Changes</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 7: Comparison Table -->
-        <section id="comparison">
-            <div class="container">
-                <h2>Comparison Table</h2>
-                <p>Community requests vs our implementation status:</p>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>memory-unified (ours)</th>
-                            <th>Ruflo (actual)</th>
-                            <th>Community Need</th>
-                            <th>Winner</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Skill matching</td>
-                            <td class="status-ok">FTS5 (fast, reliable)</td>
-                            <td class="status-error">Routes all to memory-unified</td>
-                            <td>HIGH</td>
-                            <td class="status-ok">✅ Ours</td>
-                        </tr>
-                        <tr>
-                            <td>Semantic search</td>
-                            <td class="status-ok">Qwen3 4096-dim via Spark</td>
-                            <td class="status-error">Hash-based 128-dim (fake)</td>
-                            <td>HIGH</td>
-                            <td class="status-ok">✅ Ours (by far)</td>
-                        </tr>
-                        <tr>
-                            <td>Skill execution log</td>
-                            <td class="status-ok">SQLite + skill_executions table</td>
-                            <td class="status-error">Trajectory logging (0 entries)</td>
-                            <td>MEDIUM</td>
-                            <td class="status-ok">✅ Ours</td>
-                        </tr>
-                        <tr>
-                            <td>Tool call logging</td>
-                            <td class="status-ok">unified_entries + HNSW</td>
-                            <td class="status-warning">Mirrors back to us</td>
-                            <td>MEDIUM</td>
-                            <td class="status-ok">✅ Ours</td>
-                        </tr>
-                        <tr>
-                            <td>Dynamic tool routing</td>
-                            <td class="status-ok">globalThis policy per skill</td>
-                            <td class="status-error">N/A</td>
-                            <td>MEDIUM</td>
-                            <td class="status-ok">✅ Ours</td>
-                        </tr>
-                        <tr>
-                            <td>MoE logging</td>
-                            <td class="status-ok">logs sessions_spawn model</td>
-                            <td class="status-error">Config only</td>
-                            <td>LOW</td>
-                            <td class="status-ok">✅ Ours</td>
-                        </tr>
-                        <tr>
-                            <td>Pattern learning</td>
-                            <td class="status-warning">Confidence counter in sona-patterns.json</td>
-                            <td class="status-error">0 patterns in DB</td>
-                            <td>HIGH</td>
-                            <td class="status-warning">Draw (both empty)</td>
-                        </tr>
-                        <tr>
-                            <td>Temporal decay</td>
-                            <td class="status-error">❌ Not implemented</td>
-                            <td class="status-warning">✅ Schema exists (0 data)</td>
-                            <td>MEDIUM</td>
-                            <td class="status-warning">Ruflo (concept)</td>
-                        </tr>
-                        <tr>
-                            <td>Pattern versioning</td>
-                            <td class="status-error">❌ Not implemented</td>
-                            <td class="status-warning">✅ Schema exists (0 data)</td>
-                            <td>LOW</td>
-                            <td class="status-warning">Ruflo (concept)</td>
-                        </tr>
-                        <tr>
-                            <td>Memory classification</td>
-                            <td class="status-warning">entry_type enum (6 types)</td>
-                            <td class="status-ok">type: semantic/episodic/procedural/working/pattern</td>
-                            <td>MEDIUM</td>
-                            <td class="status-ok">Ruflo (richer)</td>
-                        </tr>
-                        <tr>
-                            <td>HNSW infrastructure</td>
-                            <td class="status-error">❌ Depends on Ruflo proxy</td>
-                            <td class="status-ok">✅ vectra library works</td>
-                            <td>HIGH</td>
-                            <td class="status-warning">Ruflo (infra)</td>
-                        </tr>
-                        <tr>
-                            <td>Real embeddings</td>
-                            <td class="status-ok">✅ Qwen3 via Spark/Ollama</td>
-                            <td class="status-error">❌ Hash fallback only</td>
-                            <td>HIGH</td>
-                            <td class="status-ok">✅ Ours</td>
-                        </tr>
-                        <tr>
-                            <td>SQLite storage</td>
-                            <td class="status-ok">better-sqlite3 (native C)</td>
-                            <td class="status-warning">sql.js (WASM, slower)</td>
-                            <td>MEDIUM</td>
-                            <td class="status-ok">✅ Ours</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h3>Summary Analysis</h3>
-                <div class="hero-stats">
-                    <div class="stat-card">
-                        <span class="stat-number status-ok">8</span>
-                        <p>Our Wins</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number status-warning">3</span>
-                        <p>Ruflo Concepts</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number status-warning">1</span>
-                        <p>Ruflo Infrastructure</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number status-warning">1</span>
-                        <p>Draws</p>
-                    </div>
-                </div>
-
-                <h3>Recommendation</h3>
-                <p class="status-ok"><strong>Extract 2-3 genuinely useful Ruflo concepts, implement them natively in memory-unified, and deprecate the Ruflo MCP dependency.</strong></p>
-                
-                <p>Our implementation already handles the core functionality better than Ruflo's actual (not promised) implementation. The main value is in adopting Ruflo's well-designed schema concepts for temporal decay and memory classification.</p>
-            </div>
-        </section>
-    </main>
-
-    <script>
-        // Smooth scroll for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const navLinks = document.getElementById('navLinks');
-            navLinks.classList.toggle('active');
-        }
-
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(e) {
-            const navLinks = document.getElementById('navLinks');
-            const toggle = document.querySelector('.mobile-menu-toggle');
-            
-            if (!navLinks.contains(e.target) && !toggle.contains(e.target)) {
-                navLinks.classList.remove('active');
-            }
-        });
-
-        // Terminal cursor effect
-        document.addEventListener('DOMContentLoaded', function() {
-            const heroTitle = document.querySelector('h1');
-            heroTitle.classList.add('terminal-cursor');
-        });
-    </script>
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'})})});
+</script>
 </body>
 </html>
